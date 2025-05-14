@@ -1,0 +1,31 @@
+{
+  "name": "gracevoice",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev --listen 3000",
+    "start": "vercel dev --listen 3000",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  },
+  "engines": {
+    "node": ">=16.0.0 <20.0.0"
+  },
+  "keywords": [
+    "GraceVoice",
+    "Bible",
+    "Voice Assistant",
+    "Scripture Reader",
+    "PWA",
+    "Mirror OS",
+    "Offline App"
+  ],
+  "license": "MIT",
+  "author": "King Solomon",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Healtime2025/GraceVoice-online"
+  }
+}
