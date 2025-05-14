@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GraceVoice</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f4f4;
+      text-align: center;
+      padding: 40px;
+    }
+    h1 { font-size: 32px; color: #2c3e50; }
+    .scripture-box {
+      margin: 30px auto; padding: 20px; max-width: 800px;
+      background: white; border-radius: 10px; font-size: 24px;
+      line-height: 1.6; color: #333; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      text-align: left;
+    }
+    button { padding: 15px 25px; font-size: 18px; margin: 10px;
+      border: none; background: #1976d2; color: white; border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover { background: #145a9e; }
+    .night-mode { background-color: #1c1c1c; color: #e0e0e0; }
+    .night-mode .scripture-box { background-color: #2b2b2b; color: #e0e0e0; }
+  </style>
+</head>
+<body>
+  <h1>📖 GraceVoice</h1>
+
+  <div>
+    <label><input type="checkbox" id="themeToggle" onchange="toggleTheme()"> Night Mode</label>
+  </div>
+
+  <div>
+    <button onclick="readSelected()">📘 Read Selection</button>
+    <button onclick="stopSpeech()">⏹️ Stop/Pause</button>
+  </div>
+
+  <div class="scripture-box" id="verseDisplay">
+    Click "Read Selection" to start.
+  </div>
+
+  <div id="voiceFeedback"></div>
+
+  <script>
+    function toggleTheme() {
+      document.body.classList.toggle("night-mode");
+      localStorage.setItem("graceNightMode", document.body.classList.contains("night-mode"));
+    }
+
+    function readSelected() {
+      const book = "GEN";
+      const chapter = 1;
+      const start = 1;
+      const end = 5;
+
+      fetch(`/api/fetch-script?book=${book}&chapter=${chapter}`)
+        .then(res => res.json())
+        .then(data => {
+          let versesText = '';
+          for (let i = start; i <= end; i++) {
+            if (data.verses[i]) {
+              versesText += `${i}. ${data.verses[i]} `;
+            }
+          }
+          const utterance = new SpeechSynthesisUtterance(versesText);
+          const voices = speechSynthesis.getVoices();
+          utterance.voice = voices[0];
+          speechSynthesis.cancel();
+          speechSynthesis.speak(utterance);
+        });
+    }
+
+    function stopSpeech() {
+      speechSynthesis.cancel();
+    }
+
+    window.onload = function() {
+      if (localStorage.getItem("graceNightMode") === "true") {
+        document.body.classList.add("night-mode");
+      }
+    };
+  </script>
+  <script>
+  // 📖 GraceVoice Service Worker Registration
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then(registration => {
+          console.log('[GraceVoice SW] Registered:', registration);
+        })
+        .catch(error => {
+          console.error('[GraceVoice SW] Registration Failed:', error);
+        });
+    });
+  }
+</script>
+
+</body>
+</html>
