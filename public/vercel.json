@@ -1,0 +1,33 @@
+{
+  "rewrites": [
+    { "source": "/", "destination": "/index.html" },
+    { "source": "/index", "destination": "/index.html" },
+    { "source": "/index2", "destination": "/index2.html" },
+    { "source": "/home", "destination": "/index2.html" },
+    { "source": "/reader", "destination": "/reader.html" },
+    { "source": "/settings", "destination": "/settings.html" },
+    { "source": "/bookmarks", "destination": "/bookmark.html" },
+    { "source": "/notes", "destination": "/notes.html" },
+    { "source": "/prayer-wall", "destination": "/prayer-wall.html" },
+    { "source": "/testimonies", "destination": "/testimonies.html" },
+    { "source": "/receive-christ", "destination": "/receive-christ.html" },
+    { "source": "/about", "destination": "/about.html" },
+    { "source": "/log", "destination": "/log.html" },
+    { "source": "/api/fetch-script", "destination": "/api/fetch-script" },
+    { "source": "/404", "destination": "/404.html" },
+    { "source": "/(.*)", "destination": "/404.html" }
+  ],
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, s-maxage=3600, must-revalidate"
+        }
+      ]
+    }
+  ]
+}
