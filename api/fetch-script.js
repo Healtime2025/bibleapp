@@ -26,6 +26,8 @@
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
       text-align: left;
       min-height: 150px;
+      max-height: 400px;
+      overflow-y: auto;
     }
     button {
       padding: 12px 20px;
@@ -77,10 +79,10 @@
 
     // Load Bible Text Function
     async function loadBible() {
-      const book = document.getElementById("bookInput").value;
-      const chapter = document.getElementById("chapterInput").value;
-      const start = document.getElementById("startVerse").value || 1;
-      const end = document.getElementById("endVerse").value || 999;
+      const book = document.getElementById("bookInput").value.trim();
+      const chapter = document.getElementById("chapterInput").value.trim();
+      const start = parseInt(document.getElementById("startVerse").value) || 1;
+      const end = parseInt(document.getElementById("endVerse").value) || 999;
 
       if (!book || !chapter) {
         document.getElementById("verseDisplay").innerText = "❌ Please enter a book and chapter.";
@@ -110,7 +112,7 @@
       }
     }
 
-    // Read Selected Verses
+    // Read Selected Verses with Highlighting
     function readSelected() {
       const verses = document.querySelectorAll(".scripture-box p");
       if (!verses.length) return;
@@ -125,6 +127,7 @@
 
         const utterance = new SpeechSynthesisUtterance(verses[currentIndex].innerText);
         utterance.onend = () => { currentIndex++; readNext(); };
+
         speechSynthesis.cancel();
         speechSynthesis.speak(utterance);
       }
