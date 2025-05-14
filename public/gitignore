@@ -1,0 +1,33 @@
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependency directories
+node_modules/
+
+# Runtime data
+.pnp.*
+.vscode/
+.vercel/
+
+# Build output (optional, if added later)
+dist/
+build/
+
+# Environment variables
+.env
+.env.local
+.env.production
+.env.development
+
+# macOS system files
+.DS_Store
+
+# IDE and project files
+.idea/
+*.code-workspace
+
+# Public assets cache (optional)
+# public/icons/
+# public/*.cache
