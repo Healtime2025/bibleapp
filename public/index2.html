@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GraceVoice Bible Reader</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon-192.png">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      padding: 20px;
+      background-color: #f4f4f4;
+      color: #2c3e50;
+      transition: background 0.3s, color 0.3s;
+    }
+    select, button, input {
+      padding: 10px;
+      font-size: 16px;
+      margin: 10px;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+    }
+    .scripture-box {
+      margin-top: 20px;
+      padding: 20px;
+      max-width: 700px;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      color: #2c3e50;
+      text-align: left;
+      min-height: 150px;
+      overflow-y: auto;
+      max-height: 400px;
+    }
+    .highlight { background-color: yellow; font-weight: bold; }
+    .night-mode {
+      background-color: #2c3e50;
+      color: #f4f4f4;
+    }
+  </style>
+</head>
+<body>
+  <h1>📖 GraceVoice Bible Reader</h1>
+
+  <div>
+    <label for="bookSelect">Book:</label>
+    <select id="bookSelect">
+      <option value="Genesis">Genesis</option>
+      <option value="Exodus">Exodus</option>
+      <option value="Leviticus">Leviticus</option>
+      <option value="Numbers">Numbers</option>
+      <option value="Deuteronomy">Deuteronomy</option>
+      <option value="Joshua">Joshua</option>
+      <option value="Judges">Judges</option>
+      <option value="Ruth">Ruth</option>
+      <option value="1 Samuel">1 Samuel</option>
+      <option value="2 Samuel">2 Samuel</option>
+      <option value="1 Kings">1 Kings</option>
+      <option value="2 Kings">2 Kings</option>
+      <option value="1 Chronicles">1 Chronicles</option>
+      <option value="2 Chronicles">2 Chronicles</option>
+      <option value="Ezra">Ezra</option>
+      <option value="Nehemiah">Nehemiah</option>
+      <option value="Esther">Esther</option>
+      <option value="Job">Job</option>
+      <option value="Psalms">Psalms</option>
+      <option value="Proverbs">Proverbs</option>
+      <option value="Ecclesiastes">Ecclesiastes</option>
+      <option value="Song of Solomon">Song of Solomon</option>
+      <option value="Isaiah">Isaiah</option>
+      <option value="Jeremiah">Jeremiah</option>
+      <option value="Lamentations">Lamentations</option>
+      <option value="Ezekiel">Ezekiel</option>
+      <option value="Daniel">Daniel</option>
+      <option value="Hosea">Hosea</option>
+      <option value="Joel">Joel</option>
+      <option value="Amos">Amos</option>
+      <option value="Obadiah">Obadiah</option>
+      <option value="Jonah">Jonah</option>
+      <option value="Micah">Micah</option>
+      <option value="Nahum">Nahum</option>
+      <option value="Habakkuk">Habakkuk</option>
+      <option value="Zephaniah">Zephaniah</option>
+      <option value="Haggai">Haggai</option>
+      <option value="Zechariah">Zechariah</option>
+      <option value="Malachi">Malachi</option>
+      <option value="Matthew">Matthew</option>
+      <option value="Mark">Mark</option>
+      <option value="Luke">Luke</option>
+      <option value="John">John</option>
+      <option value="Acts">Acts</option>
+      <option value="Romans">Romans</option>
+      <option value="1 Corinthians">1 Corinthians</option>
+      <option value="2 Corinthians">2 Corinthians</option>
+      <option value="Galatians">Galatians</option>
+      <option value="Ephesians">Ephesians</option>
+      <option value="Revelation">Revelation</option>
+    </select>
+
+    <label for="chapterInput">Chapter:</label>
+    <input type="number" id="chapterInput" placeholder="Chapter" min="1">
+
+    <label for="start-verse">Start Verse:</label>
+    <input type="number" id="start-verse" placeholder="Enter start verse" min="1">
+
+    <label for="end-verse">End Verse:</label>
+    <input type="number" id="end-verse" placeholder="Enter end verse" min="1">
+
+    <div class="control-buttons">
+      <button onclick="loadBible()">📖 Load Bible</button>
+      <button onclick="toggleNightMode()">🌙 Night Mode</button>
+      <button onclick="startReading()">▶️ Start Reading</button>
+      <button onclick="stopReading()">🛑 Stop/Pause</button>
+    </div>
+  </div>
+
+  <div class="scripture-box" id="verseDisplay">📖 Your selected Bible text will appear here.</div>
+
+<script>
+  function toggleNightMode() {
+    document.body.classList.toggle('night-mode');
+    localStorage.setItem('graceNightMode', document.body.classList.contains('night-mode') ? 'dark' : 'light');
+  }
+
+  window.onload = function() {
+    if (localStorage.getItem('graceNightMode') === 'dark') {
+      document.body.classList.add('night-mode');
+    }
+  };
+
+  async function loadBible() {
+    const book = document.getElementById('bookSelect').value;
+    const chapter = document.getElementById('chapterInput').value;
+    const start = document.getElementById('start-verse').value || 1;
+    const end = document.getElementById('end-verse').value || 'full';
+
+    if (!book || !chapter) {
+      document.getElementById('verseDisplay').innerHTML = "❌ Please select a book and enter a chapter.";
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/fetch-script?book=${encodeURIComponent(book)}&chapter=${chapter}`);
+      const data = await response.json();
+
+      if (!data.verses) {
+        document.getElementById('verseDisplay').innerText = "❌ No verses found.";
+        return;
+      }
+
+      let verses = Object.entries(data.verses)
+        .filter(([v]) => v >= start && (end === 'full' || v <= end))
+        .map(([v, text]) => `<p><strong>${v}</strong> ${text}</p>`)
+        .join("");
+
+      document.getElementById('verseDisplay').innerHTML = verses || "❌ No verses in this range.";
+    } catch (error) {
+      document.getElementById('verseDisplay').innerText = "❌ Error loading Bible text.";
+      console.error("Error loading Bible:", error);
+    }
+  }
+
+  function startReading() {
+    const verses = document.querySelectorAll('.scripture-box p');
+    if (!verses.length) return;
+
+    let currentIndex = 0;
+    verses.forEach(v => v.classList.remove('highlight'));
+
+    function readNext() {
+      if (currentIndex >= verses.length) return;
+      verses.forEach(v => v.classList.remove('highlight'));
+      verses[currentIndex].classList.add('highlight');
+
+      const utterance = new SpeechSynthesisUtterance(verses[currentIndex].innerText);
+      utterance.onend = () => { currentIndex++; readNext(); };
+
+      speechSynthesis.cancel();
+      speechSynthesis.speak(utterance);
+    }
+
+    readNext();
+  }
+
+  function stopReading() {
+    speechSynthesis.cancel();
+  }
+</script>
+
+</body>
+</html>
