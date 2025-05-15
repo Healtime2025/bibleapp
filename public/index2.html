@@ -112,7 +112,6 @@
       <option value="Galatians">Galatians</option>
       <option value="Ephesians">Ephesians</option>
       <option value="Revelation">Revelation</option>
-      <!-- Add more books as needed -->
     </select>
 
     <label for="chapterInput">Chapter:</label>
@@ -147,8 +146,8 @@
   };
 
   async function loadBible() {
-    const book = document.getElementById('bookSelect').value;
-    const chapter = document.getElementById('chapterInput').value;
+    const book = document.getElementById('bookSelect').value.trim();
+    const chapter = document.getElementById('chapterInput').value.trim();
     const start = parseInt(document.getElementById('start-verse').value) || 1;
     const end = parseInt(document.getElementById('end-verse').value) || 999;
 
@@ -159,10 +158,14 @@
 
     try {
       const response = await fetch(`/api/fetch-script?book=${encodeURIComponent(book)}&chapter=${chapter}`);
-      if (!response.ok) throw new Error("Unable to load Bible text.");
-      
+      if (!response.ok) {
+        throw new Error(`❌ Error ${response.status}: ${response.statusText}`);
+      }
+
       const data = await response.json();
-      if (!data.verses) throw new Error("Chapter not found.");
+      if (!data.verses) {
+        throw new Error("❌ No verses found.");
+      }
 
       const verses = Object.entries(data.verses)
         .filter(([v]) => v >= start && v <= end)
@@ -171,7 +174,7 @@
 
       document.getElementById('verseDisplay').innerHTML = verses || "❌ No verses in this range.";
     } catch (error) {
-      document.getElementById('verseDisplay').innerText = `❌ ${error.message}`;
+      document.getElementById('verseDisplay').innerText = error.message;
       console.error("Error loading Bible:", error);
     }
   }
@@ -205,4 +208,3 @@
 
 </body>
 </html>
-
