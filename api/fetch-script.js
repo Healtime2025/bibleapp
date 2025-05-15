@@ -1,5 +1,4 @@
 // /api/fetch-script.js
-
 import { promises as fs } from "fs";
 import path from "path";
 
@@ -12,19 +11,39 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Load the Bible JSON file directly from the bibles directory
-    const filePath = path.join(process.cwd(), "bibles", "English", `${encodeURIComponent(book)}.json`);
+    // Load the text file dynamically
+    const filePath = path.join(process.cwd(), "assets", "Bible.txt");
     const fileContents = await fs.readFile(filePath, "utf8");
-    const data = JSON.parse(fileContents);
 
-    // Check if the chapter exists
-    const verses = data[chapter] || null;
-    if (!verses) {
+    // Split text by lines
+    const lines = fileContents.split("\n");
+
+    // Initialize JSON structure
+    const bibleJSON = {};
+    let currentBook = "";
+    let currentChapter = "";
+    let currentVerse = "";
+
+    // Parse the text line by line
+    lines.forEach(line => {
+      const match = line.match(/^(\w+)\s(\d+):(\d+)\s+(.*)$/);
+      if (match) {
+        const [_, bookName, chapterNum, verseNum, verseText] = match;
+
+        if (!bibleJSON[bookName]) bibleJSON[bookName] = {};
+        if (!bibleJSON[bookName][chapterNum]) bibleJSON[bookName][chapterNum] = {};
+
+        bibleJSON[bookName][chapterNum][verseNum] = verseText.trim();
+      }
+    });
+
+    // Verify if the book and chapter exist
+    if (!bibleJSON[book] || !bibleJSON[book][chapter]) {
       return res.status(404).json({ error: "Chapter not found." });
     }
 
-    // Return the verses
-    return res.status(200).json({ verses });
+    // Return the JSON object
+    return res.status(200).json({ verses: bibleJSON[book][chapter] });
   } catch (error) {
     console.error("Error loading Bible text:", error);
     return res.status(500).json({ error: "Error loading Bible text." });
