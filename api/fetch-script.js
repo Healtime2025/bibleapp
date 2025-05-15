@@ -12,7 +12,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Load the Bible JSON from the bibles directory
+    // Load the Bible JSON file directly from the bibles directory
     const filePath = path.join(process.cwd(), "bibles", "English", `${encodeURIComponent(book)}.json`);
     const fileContents = await fs.readFile(filePath, "utf8");
     const data = JSON.parse(fileContents);
@@ -23,7 +23,7 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: "Chapter not found." });
     }
 
-    // Return the verses as JSON
+    // Return the verses
     return res.status(200).json({ verses });
   } catch (error) {
     console.error("Error loading Bible text:", error);
