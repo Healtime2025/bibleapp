@@ -1,6 +1,7 @@
 // /api/fetch-script.js
-import { promises as fs } from "fs";
-import path from "path";
+
+import fs from 'fs';
+import path from 'path';
 
 export default async function handler(req, res) {
   const { book, chapter } = req.query;
@@ -11,39 +12,42 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Load the text file dynamically
-    const filePath = path.join(process.cwd(), "assets", "Bible.txt");
-    const fileContents = await fs.readFile(filePath, "utf8");
+    // Path to the Bible text file
+    const filePath = path.join(process.cwd(), 'bibles/English/Bible.txt');
+    const fileContent = fs.readFileSync(filePath, 'utf-8');
 
-    // Split text by lines
-    const lines = fileContents.split("\n");
-
-    // Initialize JSON structure
-    const bibleJSON = {};
-    let currentBook = "";
-    let currentChapter = "";
-    let currentVerse = "";
-
-    // Parse the text line by line
+    // Split the text file into lines
+    const lines = fileContent.split('\n');
+    const bibleData = {};
+    
+    // Parse the text file line by line
     lines.forEach(line => {
-      const match = line.match(/^(\w+)\s(\d+):(\d+)\s+(.*)$/);
+      const match = line.match(/^(\w+)\s(\d+):(\d+)\s+(.+)$/);
       if (match) {
         const [_, bookName, chapterNum, verseNum, verseText] = match;
 
-        if (!bibleJSON[bookName]) bibleJSON[bookName] = {};
-        if (!bibleJSON[bookName][chapterNum]) bibleJSON[bookName][chapterNum] = {};
+        // Initialize the book and chapter structure in JSON
+        if (!bibleData[bookName]) bibleData[bookName] = {};
+        if (!bibleData[bookName][chapterNum]) bibleData[bookName][chapterNum] = {};
 
-        bibleJSON[bookName][chapterNum][verseNum] = verseText.trim();
+        // Store the verse text in JSON
+        bibleData[bookName][chapterNum][verseNum] = verseText.trim();
       }
     });
 
-    // Verify if the book and chapter exist
-    if (!bibleJSON[book] || !bibleJSON[book][chapter]) {
+    // Check if the requested book and chapter exist
+    const selectedBook = bibleData[book];
+    if (!selectedBook) {
+      return res.status(404).json({ error: "Book not found." });
+    }
+
+    const selectedChapter = selectedBook[chapter];
+    if (!selectedChapter) {
       return res.status(404).json({ error: "Chapter not found." });
     }
 
-    // Return the JSON object
-    return res.status(200).json({ verses: bibleJSON[book][chapter] });
+    // Return the verses of the selected book and chapter
+    return res.status(200).json({ verses: selectedChapter });
   } catch (error) {
     console.error("Error loading Bible text:", error);
     return res.status(500).json({ error: "Error loading Bible text." });
