@@ -13,11 +13,6 @@
     { "source": "/receive-christ", "destination": "/receive-christ.html" },
     { "source": "/about", "destination": "/about.html" },
     { "source": "/log", "destination": "/log.html" },
-    
-    // API Route Correction
-    { "source": "/api/fetch-script", "destination": "/api/fetch-script.js" },
-
-    // Custom 404 Page
     { "source": "/404", "destination": "/404.html" },
     { "source": "/(.*)", "destination": "/404.html" }
   ],
@@ -30,10 +25,6 @@
         {
           "key": "Cache-Control",
           "value": "public, max-age=0, s-maxage=3600, must-revalidate"
-        },
-        {
-          "key": "Content-Type",
-          "value": "application/json"
         }
       ]
     }
