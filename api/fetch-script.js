@@ -1,5 +1,8 @@
 // /api/fetch-script.js
 
+import { promises as fs } from "fs";
+import path from "path";
+
 export default async function handler(req, res) {
   const { book, chapter } = req.query;
 
@@ -9,9 +12,10 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Load the Bible JSON from your storage (adjust this path)
-    const response = await fetch(`https://your-json-storage-url/bibles/English/${encodeURIComponent(book)}.json`);
-    const data = await response.json();
+    // Use relative path to the Bible JSON files
+    const filePath = path.join(process.cwd(), "bibles", "English", `${encodeURIComponent(book)}.json`);
+    const fileContents = await fs.readFile(filePath, "utf8");
+    const data = JSON.parse(fileContents);
 
     // Check if the chapter exists
     const verses = data[chapter] || null;
