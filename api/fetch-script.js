@@ -5,38 +5,48 @@ import path from 'path';
 import { JSDOM } from 'jsdom';
 
 export default async function handler(req, res) {
-  const { book, chapter, start, end } = req.query;
+  const { book, chapter, start = 1, end = 999 } = req.query;
 
   if (!book || !chapter) {
     return res.status(400).json({ error: "Missing book or chapter." });
   }
 
   try {
-    // Load the HTML file from the Bible directory
+    // Load the HTML file dynamically based on the book requested
     const filePath = path.join(process.cwd(), 'public/bibles', `Akjv01${book}.htm`);
-    const fileContent = fs.readFileSync(filePath, 'utf8');
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: "Book file not found." });
+    }
 
-    // Parse HTML file using JSDOM
+    const fileContent = fs.readFileSync(filePath, 'utf8');
     const dom = new JSDOM(fileContent);
     const document = dom.window.document;
 
-    // Extract verses (li elements)
+    // Extract all verse <li> elements
     const verseElements = document.querySelectorAll('li');
-
     const verses = {};
 
+    // Filter and store the verses for the requested chapter
     verseElements.forEach((verseElement) => {
       const verseText = verseElement.textContent.trim();
-      const [verseNumber, text] = verseText.split(/\s(.+)/);
-      if (verseNumber.startsWith(`${chapter}:`)) {
-        const verse = verseNumber.split(':')[1];
-        if (verse >= start && verse <= end) {
-          verses[verse] = text;
+      const verseMatch = verseText.match(/^(\d+):(\d+)\s+(.*)$/);
+      
+      if (verseMatch) {
+        const [_, chapterNum, verseNum, text] = verseMatch;
+
+        if (chapterNum === chapter) {
+          if (verseNum >= start && verseNum <= end) {
+            verses[verseNum] = text;
+          }
         }
       }
     });
 
-    // Return verses in JSON
+    if (Object.keys(verses).length === 0) {
+      return res.status(404).json({ error: "No verses found for the specified chapter." });
+    }
+
+    // Return the extracted verses in JSON format
     return res.status(200).json({ verses });
   } catch (error) {
     console.error("Error reading Bible file:", error);
